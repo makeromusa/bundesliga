@@ -2,11 +2,10 @@ import streamlit as st
 import requests
 from bs4 import BeautifulSoup
 
-# -------------------- Page Setup --------------------
 st.set_page_config(page_title="Bundesliga Wrapped ⚽", layout="wide")
 st.title("Bundesliga Wrapped ⚽")
 
-# -------------------- APIs --------------------
+
 FOOTBALL_API_KEY = st.secrets["FOOTBALL_API_KEY"]
 YOUTUBE_API_KEY = st.secrets["YOUTUBE_API_KEY"]
 HEADERS = {"X-Auth-Token": FOOTBALL_API_KEY}
@@ -14,7 +13,7 @@ HEADERS = {"X-Auth-Token": FOOTBALL_API_KEY}
 MATCHES_URL = "https://api.football-data.org/v4/competitions/BL1/matches"
 TEAMS_URL = "https://api.football-data.org/v4/competitions/BL1/teams"
 
-# -------------------- Safe Fetch Functions --------------------
+
 def fetch_matches_safe():
     try:
         resp = requests.get(MATCHES_URL, headers=HEADERS, timeout=15)
@@ -42,15 +41,15 @@ def fetch_teams_safe():
              "coach":{"name":"Edin Terzić"}, "clubColors":"Black / Yellow"},
         ]
 
-# -------------------- Fetch Data --------------------
+
 matches = fetch_matches_safe()
 teams_data = fetch_teams_safe()
 teams_list = [team["name"] for team in teams_data]
 
-# -------------------- Team Selection --------------------
+
 team_name = st.selectbox("Type your favorite team:", options=teams_list, help="Start typing and select your team")
 
-# -------------------- Team Info --------------------
+
 team_info = next((t for t in teams_data if t["name"]==team_name), {})
 team_logo = team_info.get("crest", "")
 coach = team_info.get("coach", {}).get("name", "N/A")
@@ -59,7 +58,7 @@ if team_logo:
     st.image(team_logo, width=120)
 st.markdown(f"**Coach:** {coach}")
 
-# -------------------- Compute Stats --------------------
+
 wins = draws = losses = goals_for = goals_against = matches_played = 0
 goal_list = []
 
@@ -80,7 +79,7 @@ for m in matches:
 points = wins*3 + draws
 avg_goals = round(sum(goal_list)/matches_played,2) if matches_played>0 else 0
 
-# -------------------- Metrics --------------------
+
 cols = st.columns(6)
 cols[0].metric("Matches", matches_played)
 cols[1].metric("Wins", wins)
@@ -91,7 +90,7 @@ cols[5].metric("Avg Goals/Game", avg_goals)
 
 st.markdown("---")
 
-# -------------------- Matches Table --------------------
+
 st.subheader("Matches Played")
 for m in matches:
     home, away = m["homeTeam"]["name"], m["awayTeam"]["name"]
@@ -111,7 +110,7 @@ for m in matches:
     </div>
     """, unsafe_allow_html=True)
 
-# -------------------- Top 3 Players --------------------
+
 def fetch_top_players(team_name):
     try:
         search_url="https://en.wikipedia.org/w/api.php"
@@ -147,7 +146,7 @@ for i,col in enumerate(cols):
         st.image(top_player_images[i], width=150)
         st.caption(top_players[i])
 
-# -------------------- YouTube Highlights --------------------
+
 st.subheader("🎥 Top Highlights")
 try:
     query=f"{team_name} Bundesliga highlights"
